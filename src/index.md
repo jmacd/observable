@@ -1,6 +1,6 @@
 ---
 toc: false
-title: Key Parameters
+title: Problem with site name "Silver"
 ---
 
 ```js
@@ -45,7 +45,13 @@ const begin = 1730040000000
 function s2q(site) {
   const short = site.short;
   const sitename = site.name;
-  return `SELECT '${sitename}.' as SITE, "VarA" as VARA, "VarB" as VARB, "VarC" as VARC, Timestamp*1000 as UTC from ${short} where UTC >= ${begin}`;
+  // Note #1. When I remove the 'X' from '${sitename}X' below, then the
+  // sitename, which is "Silver" in one case, somehow causes trouble.
+  // Without the 'X', the site name is also a color name.  Below, we use
+  // the SITE column as the stroke, but the result when the SITE is "Silver"
+  // causes: (a) the site does not appear in the color legend, (b) the 
+  // corresponding mark is grey.
+  return `SELECT '${sitename}X' as SITE, "VarA" as VARA, "VarB" as VARB, "VarC" as VARC, Timestamp*1000 as UTC from ${short} where UTC >= ${begin}`;
 }
 ```
 
@@ -62,13 +68,14 @@ var duck = await DuckDBClient.of({
 ```js
 const bysite = sites.map(site => {
    const q = s2q(site);
-   console.log("query is", q);
    return duck.query(q);
 });
 const results = await Promise.all(bysite);
 ```
 
 ```js
+// Question #2: Why does this Inputs.table() not display anything?
+console.log(results[0]);
 Inputs.table(results[0]);
 ```
 
